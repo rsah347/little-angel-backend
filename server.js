@@ -13,9 +13,9 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// ================= SERVE FRONTEND =================
-app.use(express.static(path.join(__dirname, "public")));
-app.use("/admin", express.static(path.join(__dirname, "admin")));
+app.get("/", (req, res) => {
+  res.json({ message: "Little Angel Backend is running 🚀" });
+});
 
 // ================= DATABASE =================
 let pool;
