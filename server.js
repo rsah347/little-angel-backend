@@ -13,26 +13,23 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-app.get("/", (req, res) => {
-  res.json({ message: "Little Angel Backend is running 🚀" });
-});
+// ✅ Serve frontend files
+app.use(express.static(path.join(__dirname, "public")));
 
 // ================= DATABASE =================
 let pool;
 
 if (process.env.DATABASE_URL) {
-  // ✅ Render / Production
   pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false },
   });
 } else {
-  // ✅ Local PostgreSQL
   pool = new Pool({
     user: "postgres",
     host: "localhost",
     database: "school_db",
-    password: "rahul", // MUST be string
+    password: "rahul",
     port: 5432,
   });
 }
@@ -42,12 +39,11 @@ pool.connect()
   .then(() => console.log("✅ PostgreSQL connected"))
   .catch(err => console.error("❌ DB connection error:", err.message));
 
-// ================= TEST API =================
+// ================= API ROUTES =================
 app.get("/api/test", (req, res) => {
   res.json({ message: "Server running successfully" });
 });
 
-// ================= ADMIN LOGIN =================
 app.post("/admin/login", (req, res) => {
   const { username, password } = req.body;
 
@@ -64,7 +60,6 @@ app.post("/admin/login", (req, res) => {
   });
 });
 
-// ================= ADMISSION =================
 app.post("/submit-admission", async (req, res) => {
   try {
     const {
@@ -106,7 +101,6 @@ app.post("/submit-admission", async (req, res) => {
   }
 });
 
-// ================= CONTACT =================
 app.post("/submit-contact", async (req, res) => {
   try {
     const { name, email, subject, message } = req.body;
@@ -124,7 +118,6 @@ app.post("/submit-contact", async (req, res) => {
   }
 });
 
-// ================= ACTIVITIES =================
 let activities = [];
 
 app.get("/activities", (req, res) => {
@@ -140,13 +133,12 @@ app.post("/activities", (req, res) => {
   res.json({ success: true });
 });
 
-// Fallback route for root
+// ✅ FRONTEND ROUTE (KEEP THIS LAST)
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-
 // ================= START SERVER =================
 app.listen(PORT, () => {
-  console.log(`✅ Server running on http://localhost:${PORT}`);
+  console.log(`✅ Server running on port ${PORT}`);
 });
