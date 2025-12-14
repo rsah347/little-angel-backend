@@ -13,18 +13,21 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// ✅ Serve frontend files
-app.use(express.static(path.join(__dirname, "public")));
+// ================= SERVE FRONTEND =================
+app.use(express.static(path.join(__dirname, "public"))); // Main public folder
+app.use("/admin", express.static(path.join(__dirname, "admin"))); // Admin panel
 
 // ================= DATABASE =================
 let pool;
 
 if (process.env.DATABASE_URL) {
+  // ✅ Render / Production
   pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false },
   });
 } else {
+  // ✅ Local PostgreSQL
   pool = new Pool({
     user: "postgres",
     host: "localhost",
@@ -39,11 +42,12 @@ pool.connect()
   .then(() => console.log("✅ PostgreSQL connected"))
   .catch(err => console.error("❌ DB connection error:", err.message));
 
-// ================= API ROUTES =================
+// ================= TEST API =================
 app.get("/api/test", (req, res) => {
   res.json({ message: "Server running successfully" });
 });
 
+// ================= ADMIN LOGIN =================
 app.post("/admin/login", (req, res) => {
   const { username, password } = req.body;
 
@@ -60,6 +64,7 @@ app.post("/admin/login", (req, res) => {
   });
 });
 
+// ================= ADMISSION =================
 app.post("/submit-admission", async (req, res) => {
   try {
     const {
@@ -101,6 +106,7 @@ app.post("/submit-admission", async (req, res) => {
   }
 });
 
+// ================= CONTACT =================
 app.post("/submit-contact", async (req, res) => {
   try {
     const { name, email, subject, message } = req.body;
@@ -118,6 +124,7 @@ app.post("/submit-contact", async (req, res) => {
   }
 });
 
+// ================= ACTIVITIES =================
 let activities = [];
 
 app.get("/activities", (req, res) => {
@@ -133,12 +140,31 @@ app.post("/activities", (req, res) => {
   res.json({ success: true });
 });
 
-// ✅ FRONTEND ROUTE (KEEP THIS LAST)
+// ================= FRONTEND PAGES =================
+// Serve all HTML pages in the public folder
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
+app.get("/about", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "about.html"));
+});
+
+app.get("/contact", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "contact.html"));
+});
+
+app.get("/gallery", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "gallery.html"));
+});
+
+// Add more pages here as needed
+// Example:
+// app.get("/admission", (req, res) => {
+//   res.sendFile(path.join(__dirname, "public", "admission.html"));
+// });
+
 // ================= START SERVER =================
 app.listen(PORT, () => {
-  console.log(`✅ Server running on port ${PORT}`);
+  console.log(`✅ Server running on http://localhost:${PORT}`);
 });
